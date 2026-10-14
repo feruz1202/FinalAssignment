@@ -36,40 +36,40 @@ void Database::execute(vector<string> cmd)
     }
 
     // 2. Make the command word uppercase, so "set" and "SET" both work
-    std::transform(cmd[0].begin(), cmd[0].end(), cmd[0].begin(),
-                   [](unsigned char c) { return std::toupper(c); });
+    transform(cmd[0].begin(), cmd[0].end(), cmd[0].begin(),
+                   [](unsigned char c) { return toupper(c); });
 
     string name = cmd[0];
     
      // 3. Route to the right method, checking argument count BEFORE using cmd[i]
     if (name == "SET") {
         if (cmd.size() != 3) {
-            std::cout << "(error) wrong number of arguments for 'SET'\n";
+            cout << "(error) wrong number of arguments for 'SET'\n";
             return;
         }
         set(cmd[1], cmd[2]);
-        std::cout << "OK\n";
+        cout << "OK\n";
     }
     else if (name == "GET") {
         if (cmd.size() != 2) {
-            std::cout << "(error) wrong number of arguments for 'GET'\n";
+            cout << "(error) wrong number of arguments for 'GET'\n";
             return;
         }
         auto result = get(cmd[1]);
         if (result.has_value()) {
-            std::cout << *result << "\n";
+            cout << *result << "\n";
         } else {
-            std::cout << "(nil)\n";
+            cout << "(nil)\n";
         }
     }
     else if (name == "DEL") {
         if (cmd.size() != 2) {
-            std::cout << "(error) wrong number of arguments for 'DEL'\n";
+            cout << "(error) wrong number of arguments for 'DEL'\n";
             return;
         }
-        std::cout << "(integer) " << (del(cmd[1]) ? 1 : 0) << "\n";
+        cout << "(integer) " << (del(cmd[1]) ? 1 : 0) << "\n";
     }
     else {
-        std::cout << "(error) unknown command '" << name << "'\n";
+        cout << "(error) unknown command '" << name << "'\n";
     }
 }
