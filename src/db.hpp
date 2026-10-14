@@ -1,8 +1,20 @@
 #ifndef DB_HPP
 #define DB_HPP
+
+#include <unordered_map>
+#include <string>
+#include <optional>
+#include <vector>
+using namespace std;
 class Database {
-    // Feruz -> set(key, value), get(key), del(key)
+public:
+    void set(string key, string value);
+    optional<string> get(string key);
+    bool del(string key);
+    void execute(vector<string> cmd);
 
+private:
+    unordered_map<string, string> store;
 };
-#endif 
 
+#endif
