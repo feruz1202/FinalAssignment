@@ -1,20 +1,19 @@
 #ifndef DB_HPP
 #define DB_HPP
-
+#include "../include/resp.hpp"
 #include <unordered_map>
 #include <string>
 #include <optional>
 #include <vector>
-using namespace std;
 class Database {
-public:
-    void set(string key, string value);
-    optional<string> get(string key);
-    bool del(string key);
-    void execute(vector<string> cmd);
+    public:
+        void set(std::string key, std::string value);
+        std::optional<std::string> get(std::string key);
+        bool del(std::string key);
+        std::unique_ptr<RespPayload> execute(std::vector<std::string> cmd);
 
-private:
-    unordered_map<string, string> store;
+    private:
+        std::unordered_map<std::string, std::string> store;
 };
 
 #endif

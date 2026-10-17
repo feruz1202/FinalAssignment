@@ -3,10 +3,10 @@
 #include <string>
 #include <algorithm>
 #include <cctype>
-#include <iostream>
 #include <vector>
+#include <memory>
+#include "../include/resp.hpp"
 using namespace std;
-
 void Database::set(string key, string value)
 {
     store.insert_or_assign(key, value);
@@ -27,49 +27,49 @@ bool Database::del(string key)
     return store.erase(key) > 0;
 }
 
-void Database::execute(vector<string> cmd)
+
+unique_ptr<RespPayload> Database::execute(vector<string> cmd)
 {
     if (cmd.empty())
     {
-        cout << "(error) empty command\n";
-        return;
+        return make_unique<RespErr>(string("empty command"));
     }
 
-    // 2. Make the command word uppercase, so "set" and "SET" both work
     transform(cmd[0].begin(), cmd[0].end(), cmd[0].begin(),
                    [](unsigned char c) { return toupper(c); });
 
     string name = cmd[0];
+
+    // TODO: docs command
+    if(name == "COMMAND") {
+        return make_unique<RespSimpleStr>(string("OK"));
+    }
     
-     // 3. Route to the right method, checking argument count BEFORE using cmd[i]
     if (name == "SET") {
         if (cmd.size() != 3) {
-            cout << "(error) wrong number of arguments for 'SET'\n";
-            return;
+            return make_unique<RespErr>(string("wrong number of arguments for 'SET'\n"));
         }
         set(cmd[1], cmd[2]);
-        cout << "OK\n";
+        return make_unique<RespSimpleStr>(string("OK"));
     }
     else if (name == "GET") {
         if (cmd.size() != 2) {
-            cout << "(error) wrong number of arguments for 'GET'\n";
-            return;
+            return make_unique<RespErr>("wrong number of arguments for 'GET'\n");
         }
         auto result = get(cmd[1]);
         if (result.has_value()) {
-            cout << *result << "\n";
+            return make_unique<RespBulk>(*result);
         } else {
-            cout << "(nil)\n";
+            // TODO: return real (nil)
+            return make_unique<RespSimpleStr>(string("(nil)"));
         }
     }
     else if (name == "DEL") {
         if (cmd.size() != 2) {
-            cout << "(error) wrong number of arguments for 'DEL'\n";
-            return;
+            return make_unique<RespErr>("wrong number of arguments for 'DEL'\n");
         }
-        cout << "(integer) " << (del(cmd[1]) ? 1 : 0) << "\n";
+        int res = del(cmd[1]);
+        return make_unique<RespInt>(res);
     }
-    else {
-        cout << "(error) unknown command '" << name << "'\n";
-    }
+    return make_unique<RespErr>("unknown command");
 }

@@ -1,4 +1,8 @@
 #include <iostream>
+#include "../include/resp.hpp"
+#include "db.hpp"
+#include <ostream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <unistd.h>
@@ -12,6 +16,7 @@
 
 Server::Server(int port) {
     this->port = port;
+    this->db = Database();
 }
 
 static std::vector<std::string> readResp(int client_fd) {
@@ -62,10 +67,22 @@ static std::vector<std::string> readResp(int client_fd) {
 
 
 void Server::handleConnection(int client_fd) {
-    static constexpr char OK[] = "+OK\r\n";
-    write(client_fd, OK, sizeof(OK) - 1);
     while (true){
-        std::vector<std::string> tokens = readResp(client_fd);
+        try {
+            std::vector<std::string> tokens = readResp(client_fd);
+            auto response = this->db.execute(tokens);
+            try{
+                response->writeToClient(client_fd);
+            } catch(const std::runtime_error& err) {
+                std::cout << "Client error: " << err.what() << std::endl;
+                close(client_fd);
+                return;
+            }
+        } catch(const std::runtime_error& err) {
+            std::cout << "Client error: " << err.what() << std::endl;
+            close(client_fd);
+            return;
+        }
     };
 }
 
