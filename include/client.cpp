@@ -1,6 +1,7 @@
 #include "resp.hpp"
 #include <arpa/inet.h> // inet_addr()
 #include <netdb.h>
+#include <optional>
 #include <stdexcept>
 #include <stdio.h>
 #include <iostream>
@@ -24,9 +25,6 @@ Client::Client(char* addr, int port) {
         std::cout << "socket creation failed...\n";
         exit(0);
     }
-    else {
-        std::cout << "Socket successfully created..\n";
-    }
     bzero(&servaddr, sizeof(servaddr));
 
     servaddr.sin_family = AF_INET;
@@ -37,7 +35,6 @@ Client::Client(char* addr, int port) {
         exit(0);
     }
     else {
-        std::cout << "connected to the server successfully...\n" ;
         this->socket_fd = sockfd;
     }
 }
@@ -53,7 +50,40 @@ RespVal Client::sendCmd(std::vector<RespBulkStr> cmd) {
     return response;
 }
 
+std::optional<std::string> Client::get(std::string key) {
+    std::vector<RespBulkStr> tokens = {RespBulkStr("GET"), RespBulkStr(key)};
+    RespVal response = this->sendCmd(tokens);
+    std::cout << "get request got a response back\n";
+    switch (response.data.index()) {
+        case 3:
+            return std::get<RespBulkStr>(response.data).data;
+        case 5:
+            return nullptr;
+        default:
+            throw std::runtime_error("unexpected type from the server");
+    }
+}
+
+void Client::set(std::string key, std::string val) {
+    std::vector<RespBulkStr> tokens = {
+        RespBulkStr("SET"), 
+        RespBulkStr(key),
+        RespBulkStr(val)
+    };
+    RespVal response = this->sendCmd(tokens);
+    switch (response.data.index()) {
+        case 0:
+            std::cout << "successfully set the key\n";
+            break;
+        case 4:
+            throw std::get<RespErrVal>(response.data);
+            break;
+        default:
+            throw std::runtime_error("unexpected type from the server");
+            break;
+    }
+}
+
 Client::~Client() {
-    std::cout << "bye bye...\n";
     close(this->socket_fd);
 }

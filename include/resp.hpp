@@ -4,6 +4,7 @@
 #include <variant>
 #define MAX_RESP_BUFFER 4096
 
+
 class RespErrVal {
     public:
         RespErrVal(std::string msg);
@@ -23,8 +24,9 @@ class RespVal {
             int,
             std::vector<RespBulkStr>,
             RespBulkStr,
-            RespErrVal
-                >;
+            RespErrVal,
+            std::monostate
+            >;
         RespVal(ValueType v);
         ValueType data;
     protected:

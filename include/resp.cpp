@@ -1,6 +1,7 @@
 #include "resp.hpp"
 #include <string>
 #include <unistd.h>
+#include <variant>
 #include <vector>
 
 RespVal parseInt(std::string_view s) {
@@ -45,7 +46,11 @@ RespVal parseBulkStr(std::string_view s) {
         throw std::runtime_error("incomplete bulk length");
     }
 
-    size_t len = std::stoul(std::string(s.substr(pos + 1, end - pos - 1)));
+    int len = std::stoul(std::string(s.substr(pos + 1, end - pos - 1)));
+    if(len < 0) {
+        // $-1\r\n null bulk
+        return RespVal(std::monostate{});
+    }
     pos = end + 2;                                
 
     if (pos + len + 2 > s.size()) {
@@ -55,7 +60,8 @@ RespVal parseBulkStr(std::string_view s) {
     if (s.substr(pos + len, 2) != "\r\n") {
         throw std::runtime_error("bulk string missing CRLF terminator");
     }
-    return RespVal(std::string(s.substr(pos, len)));
+    std::string str = std::string(s.substr(pos, len));
+    return RespVal(RespBulkStr(str));
 }
 
 RespVal parseResp(std::string_view s) {
@@ -186,6 +192,15 @@ int writeResp(int fd, RespVal val) {
                 RespErrVal err = std::get<4>(val.data);
                 serializeRespErr(buffer, err);
                 break;
+            }
+        // (nil)
+        case 5:
+            {
+                buffer.push_back('$');
+                buffer.push_back('-');
+                buffer.push_back('1');
+                buffer.push_back('\r');
+                buffer.push_back('\n');
             }
     }
 

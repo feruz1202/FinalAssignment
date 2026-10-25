@@ -79,6 +79,10 @@ std::string format_resp_val(RespVal resp) {
             formatted = oss.str();
             break;
         }
+        case 5: {
+                    formatted = "(nil)";
+                    break;
+        }
         default:
             formatted = "(unknown type)";
             break;

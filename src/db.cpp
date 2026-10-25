@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <cctype>
+#include <variant>
 #include <vector>
 #include "../include/resp.hpp"
 using namespace std;
@@ -59,8 +60,7 @@ RespVal Database::execute(vector<string> cmd)
         if (result.has_value()) {
             return RespVal(RespBulkStr(*result));
         } else {
-            // TODO: return real (nil)
-            return RespVal("(nil)");
+            return RespVal(std::monostate{});
         }
     }
     else if (name == "DEL") {
