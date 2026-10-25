@@ -19,7 +19,10 @@ Server::Server(int port) {
     this->db = Database();
 }
 
-static std::vector<std::string> readResp(int client_fd) {
+// FIXME: use the readResp from the resp.hpp, the single source of truth
+// Problem is we have not implemented parsing multi bulk strings in that function
+// so we are gonna use a seperate function for server side parsing
+static std::vector<std::string> readResp0(int client_fd) {
     char buffer[MAX_BUFFER] = {0};
     ssize_t n = read(client_fd, buffer, sizeof(buffer) - 1);
     if (n <= 0) {
@@ -69,10 +72,10 @@ static std::vector<std::string> readResp(int client_fd) {
 void Server::handleConnection(int client_fd) {
     while (true){
         try {
-            std::vector<std::string> tokens = readResp(client_fd);
+            std::vector<std::string> tokens = readResp0(client_fd);
             auto response = this->db.execute(tokens);
             try{
-                response->writeToClient(client_fd);
+                writeResp(client_fd, response);
             } catch(const std::runtime_error& err) {
                 std::cout << "Client error: " << err.what() << std::endl;
                 close(client_fd);

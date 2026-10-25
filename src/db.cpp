@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cctype>
 #include <vector>
-#include <memory>
 #include "../include/resp.hpp"
 using namespace std;
 void Database::set(string key, string value)
@@ -28,11 +27,11 @@ bool Database::del(string key)
 }
 
 
-unique_ptr<RespPayload> Database::execute(vector<string> cmd)
+RespVal Database::execute(vector<string> cmd)
 {
     if (cmd.empty())
     {
-        return make_unique<RespErr>(string("empty command"));
+        return RespVal(RespErrVal("empty command"));
     }
 
     transform(cmd[0].begin(), cmd[0].end(), cmd[0].begin(),
@@ -42,34 +41,34 @@ unique_ptr<RespPayload> Database::execute(vector<string> cmd)
 
     // TODO: docs command
     if(name == "COMMAND") {
-        return make_unique<RespSimpleStr>(string("OK"));
+        return RespVal("OK");
     }
     
     if (name == "SET") {
         if (cmd.size() != 3) {
-            return make_unique<RespErr>(string("wrong number of arguments for 'SET'\n"));
+            return RespVal(RespErrVal("wrong number of arguments for 'SET'"));
         }
         set(cmd[1], cmd[2]);
-        return make_unique<RespSimpleStr>(string("OK"));
+        return RespVal("OK");
     }
     else if (name == "GET") {
         if (cmd.size() != 2) {
-            return make_unique<RespErr>("wrong number of arguments for 'GET'\n");
+            return RespVal(RespErrVal("wrong number of arguments for 'GET'"));
         }
         auto result = get(cmd[1]);
         if (result.has_value()) {
-            return make_unique<RespBulk>(*result);
+            return RespVal(RespBulkStr(*result));
         } else {
             // TODO: return real (nil)
-            return make_unique<RespSimpleStr>(string("(nil)"));
+            return RespVal("(nil)");
         }
     }
     else if (name == "DEL") {
         if (cmd.size() != 2) {
-            return make_unique<RespErr>("wrong number of arguments for 'DEL'\n");
+            return RespVal(RespErrVal("wrong number of arguments for 'DEL'"));
         }
         int res = del(cmd[1]);
-        return make_unique<RespInt>(res);
+        return RespVal(res);
     }
-    return make_unique<RespErr>("unknown command");
+    return RespVal(RespErrVal("unknown command"));
 }

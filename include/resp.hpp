@@ -1,47 +1,35 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <variant>
 #define MAX_RESP_BUFFER 4096
 
-
-
-class RespPayload {
+class RespErrVal {
     public:
-        virtual void writeToClient(int fd);
-        virtual ~RespPayload() = default;
+        RespErrVal(std::string msg);
+        std::string message;
 };
 
-class RespMultiBulk : public RespPayload {
-    std::vector<char> buffer;
-    public:
-        RespMultiBulk(const std::vector<std::string>& data);
-        void writeToClient(int fd) override;
-};
-
-class RespBulk : public RespPayload {
-    std::vector<char> buffer;
-    public:
-        RespBulk(const std::string& s);   
-        void writeToClient(int fd) override;
-};
-
-class RespSimpleStr : public RespPayload {
-    std::vector<char> buffer;
-    public:
-        RespSimpleStr(const std::string& s);
-        void writeToClient(int fd) override;
-};
-
-class RespErr : public RespPayload {
-    std::vector<char> buffer;
+class RespBulkStr {
     public: 
-        RespErr(const std::string& s);
-        void writeToClient(int fd) override;
+        RespBulkStr(std::string data);
+        std::string data;
 };
 
-class RespInt: public RespPayload {
-    std::vector<char> buffer; 
+class RespVal {
     public:
-        RespInt(int val);
-        void writeToClient(int fd) override;
+        using ValueType = std::variant<
+            std::string,
+            int,
+            std::vector<RespBulkStr>,
+            RespBulkStr,
+            RespErrVal
+                >;
+        RespVal(ValueType v);
+        ValueType data;
+    protected:
 };
+
+int writeResp(int fd, RespVal val);
+
+RespVal readResp(int fd);

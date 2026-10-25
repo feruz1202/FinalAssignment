@@ -1,7 +1,5 @@
-Tohir, Boburmirzo, and Feruz's Final Project for Computer Programming
+# Final Semester Project for Computer programming 2026.
+
+The repository holds the code for a clone of Redis written in C++.
 
 
-# changes from Boburmirzo
-
-
-Feruz's branch

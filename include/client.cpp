@@ -1,15 +1,21 @@
+#include "resp.hpp"
 #include <arpa/inet.h> // inet_addr()
 #include <netdb.h>
+#include <stdexcept>
 #include <stdio.h>
 #include <iostream>
 #include <stdlib.h>
-#include <strings.h> // bzero()
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
+#include <vector>
 #define SA struct sockaddr
+#define MAX_BUFFER 4096
 #include "client.hpp"
 
 
+
+// FIXME: change char* to std::string 
+// but inet_addr() takes char*
 Client::Client(char* addr, int port) {
     int sockfd;
     struct sockaddr_in servaddr, cli;
@@ -34,6 +40,17 @@ Client::Client(char* addr, int port) {
         std::cout << "connected to the server successfully...\n" ;
         this->socket_fd = sockfd;
     }
+}
+
+RespVal Client::sendCmd(std::vector<RespBulkStr> cmd) {
+    RespVal resp_cmd = RespVal(cmd); 
+    int n = writeResp(this->socket_fd, resp_cmd);
+    if (n <= 0) {
+        throw std::runtime_error(std::string("write failed: ") + std::strerror(errno));
+    };
+    // FIXME: make it asynchrounous
+    RespVal response = readResp(this->socket_fd);
+    return response;
 }
 
 Client::~Client() {
