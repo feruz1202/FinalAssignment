@@ -1,10 +1,10 @@
 #include "resp.hpp"
 #include <arpa/inet.h> // inet_addr()
 #include <netdb.h>
+#include <iostream>
 #include <optional>
 #include <stdexcept>
 #include <stdio.h>
-#include <iostream>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
@@ -53,7 +53,6 @@ RespVal Client::sendCmd(std::vector<RespBulkStr> cmd) {
 std::optional<std::string> Client::get(std::string key) {
     std::vector<RespBulkStr> tokens = {RespBulkStr("GET"), RespBulkStr(key)};
     RespVal response = this->sendCmd(tokens);
-    std::cout << "get request got a response back\n";
     switch (response.data.index()) {
         case 3:
             return std::get<RespBulkStr>(response.data).data;
@@ -73,7 +72,6 @@ void Client::set(std::string key, std::string val) {
     RespVal response = this->sendCmd(tokens);
     switch (response.data.index()) {
         case 0:
-            std::cout << "successfully set the key\n";
             break;
         case 4:
             throw std::get<RespErrVal>(response.data);

@@ -75,7 +75,6 @@ void Server::handleConnection(int client_fd) {
             std::vector<std::string> tokens = readResp0(client_fd);
             auto response = this->db.execute(tokens);
             try{
-                std::cout << "the fucking response type: " << response.data.index() << std::endl;
                 writeResp(client_fd, response);
             } catch(const std::runtime_error& err) {
                 std::cout << "Client error: " << err.what() << std::endl;
