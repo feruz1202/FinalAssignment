@@ -1,4 +1,8 @@
 #include <iostream>
+#include "../include/resp.hpp"
+#include "db.hpp"
+#include <ostream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <unistd.h>
@@ -12,9 +16,13 @@
 
 Server::Server(int port) {
     this->port = port;
+    this->db = Database();
 }
 
-static std::vector<std::string> readResp(int client_fd) {
+// FIXME: use the readResp from the resp.hpp, the single source of truth
+// Problem is we have not implemented parsing multi bulk strings in that function
+// so we are gonna use a seperate function for server side parsing
+static std::vector<std::string> readResp0(int client_fd) {
     char buffer[MAX_BUFFER] = {0};
     ssize_t n = read(client_fd, buffer, sizeof(buffer) - 1);
     if (n <= 0) {
@@ -62,10 +70,22 @@ static std::vector<std::string> readResp(int client_fd) {
 
 
 void Server::handleConnection(int client_fd) {
-    static constexpr char OK[] = "+OK\r\n";
-    write(client_fd, OK, sizeof(OK) - 1);
     while (true){
-        std::vector<std::string> tokens = readResp(client_fd);
+        try {
+            std::vector<std::string> tokens = readResp0(client_fd);
+            auto response = this->db.execute(tokens);
+            try{
+                writeResp(client_fd, response);
+            } catch(const std::runtime_error& err) {
+                std::cout << "Client error: " << err.what() << std::endl;
+                close(client_fd);
+                return;
+            }
+        } catch(const std::runtime_error& err) {
+            std::cout << "Client error: " << err.what() << std::endl;
+            close(client_fd);
+            return;
+        }
     };
 }
 
