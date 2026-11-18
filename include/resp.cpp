@@ -1,12 +1,14 @@
 #include "resp.hpp"
 #include <string>
+#include <cstring>
 #include <unistd.h>
 #include <variant>
+#include <stdexcept>
 #include <vector>
 
 RespVal parseInt(std::string_view s) {
     // :[value]\r\n
-    int crlf_pos = s.find("\r\n");
+    size_t crlf_pos = s.find("\r\n");
     if(crlf_pos == std::string_view::npos) {
         throw std::runtime_error(std::string("crlf not found on intiger"));
     }
@@ -14,7 +16,7 @@ RespVal parseInt(std::string_view s) {
 }
 
 RespVal parseErr(std::string_view s) {
-    int crlf_pos = s.find("\r\n");
+    size_t crlf_pos = s.find("\r\n");
     if(crlf_pos == std::string_view::npos) {
         throw std::runtime_error(std::string("crlf not found on err type"));
     }
@@ -40,7 +42,7 @@ RespVal parseSimpleStr(std::string_view s) {
 }
 
 RespVal parseBulkStr(std::string_view s) {
-    int pos = 0;
+    size_t pos = 0;
     size_t end = s.find("\r\n", pos);          
     if (end == std::string_view::npos) {
         throw std::runtime_error("incomplete bulk length");

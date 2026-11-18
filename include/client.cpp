@@ -2,6 +2,7 @@
 #include <arpa/inet.h> // inet_addr()
 #include <netdb.h>
 #include <iostream>
+#include <cstring>
 #include <optional>
 #include <stdexcept>
 #include <stdio.h>

@@ -4,6 +4,7 @@
 #include <ostream>
 #include <stdexcept>
 #include <string>
+#include <cstring>
 #include <string_view>
 #include <unistd.h>
 #include <thread>
