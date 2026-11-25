@@ -5,7 +5,6 @@
 #include "../include/client.hpp"
 #include "../include/resp.hpp"
 #include <vector>
-#define INPUT_SIZE 1024
 
 
 std::vector<std::string> split(const std::string& str, 
