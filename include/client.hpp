@@ -2,6 +2,7 @@
 #include <optional>
 #include <vector>
 #include "resp.hpp"
+#include <string>
 
 class Client {
     public:
