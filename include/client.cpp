@@ -1,4 +1,8 @@
+#include "client.hpp"
 #include "resp.hpp"
+#include <cerrno>
+#include <string>
+#include <variant>
 #include <arpa/inet.h> // inet_addr()
 #include <netdb.h>
 #include <iostream>
@@ -12,7 +16,6 @@
 #include <vector>
 #define SA struct sockaddr
 #define MAX_BUFFER 4096
-#include "client.hpp"
 
 
 
