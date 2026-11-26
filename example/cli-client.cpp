@@ -4,7 +4,7 @@
 #include <iostream>
 #include "../include/client.hpp"
 #include "../include/resp.hpp"
-#include <vector>
+
 
 
 std::vector<std::string> split(const std::string& str, 
@@ -90,8 +90,8 @@ std::string format_resp_val(RespVal resp) {
     return formatted;
 }
 
-int main (int argc, char *argv[]) {
-    char* host = "0.0.0.0";
+int main () {
+    char host[] = "127.0.0.1";
     Client client = Client(host, 6379);
 
     while(true) {
